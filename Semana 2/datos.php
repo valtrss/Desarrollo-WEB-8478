@@ -12,7 +12,7 @@ $guias = [
         "dificultad"  => 8,
         "horas"       => 62,
         "logros"      => 63,
-        "img"         => "hollow-knight.svg",
+        "img"         => "hollow-knight.webp",
         "resumen"     => "El 112% exige Alma Pura y el Panteon de Hallownest. La parte dificil no son los jefes sueltos, sino encadenarlos sin morir."
     ],
     [
@@ -22,7 +22,7 @@ $guias = [
         "dificultad"  => 4,
         "horas"       => 45,
         "logros"      => 36,
-        "img"         => "gow-ragnarok.svg",
+        "img"         => "gow-ragnarok.jpg",
         "resumen"     => "Platino accesible y sin trofeos perdibles. Puedes volver a cualquier zona despues del final para cerrar los coleccionables."
     ],
     [
@@ -32,7 +32,7 @@ $guias = [
         "dificultad"  => 7,
         "horas"       => 70,
         "logros"      => 34,
-        "img"         => "bloodborne.svg",
+        "img"         => "bloodborne.jpg",
         "resumen"     => "Necesita tres finales y las Mazmorras Calices. Planifica los finales con partidas guardadas antes del ultimo jefe."
     ],
     [
@@ -42,7 +42,7 @@ $guias = [
         "dificultad"  => 5,
         "horas"       => 130,
         "logros"      => 40,
-        "img"         => "stardew-valley.svg",
+        "img"         => "stardew-valley.jpg",
         "resumen"     => "No es dificil, es largo. El cuello de botella son los envios completos: hay cultivos que solo aparecen en una estacion."
     ],
     [
@@ -52,7 +52,7 @@ $guias = [
         "dificultad"  => 3,
         "horas"       => 28,
         "logros"      => 51,
-        "img"         => "spiderman-2.svg",
+        "img"         => "spiderman-2.jpg",
         "resumen"     => "El platino mas amable de la lista. Todo es acumulable y el mapa marca lo que falta una vez terminada la historia."
     ],
     [
@@ -62,7 +62,7 @@ $guias = [
         "dificultad"  => 7,
         "horas"       => 115,
         "logros"      => 42,
-        "img"         => "elden-ring.svg",
+        "img"         => "elden-ring.jpg",
         "resumen"     => "Requiere las tres reliquias de hechizos y varios finales. Con dos partidas paralelas evitas una tercera vuelta completa."
     ],
 ];

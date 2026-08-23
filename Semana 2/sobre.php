@@ -26,9 +26,9 @@ include "partials/navbar.php";
 
             <h2 class="h5 mt-4">Sobre las imagenes</h2>
             <p class="mb-0">
-                Las portadas son imagenes de referencia generadas para este proyecto. No se
-                utilizan materiales con derechos de autor de Sony, Valve ni de los estudios
-                desarrolladores.
+                Las portadas pertenecen a sus respectivos estudios y distribuidoras. Se
+                utilizan aqui unicamente con fines academicos, como parte de un trabajo
+                del ramo Desarrollo Web, sin ningun proposito comercial.
             </p>
         </div>
     </div>

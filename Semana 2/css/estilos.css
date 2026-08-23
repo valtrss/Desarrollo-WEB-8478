@@ -24,7 +24,7 @@ textarea:focus-visible {
 /* Las portadas conservan su proporcion en cualquier ancho y no desbordan la tarjeta. */
 .portada {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
     background-color: #e9ecef;
 }
