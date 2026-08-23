@@ -1,0 +1,54 @@
+/* Estilos propios. Bootstrap resuelve la grilla; aqui solo van los ajustes del blog. */
+
+/* El enlace para saltar al contenido aparece solo al navegar con teclado. */
+.saltar {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 1080;
+    background: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+/* Foco siempre visible: es una de las reglas de accesibilidad del ramo. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* Las portadas conservan su proporcion en cualquier ancho y no desbordan la tarjeta. */
+.portada {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    background-color: #e9ecef;
+}
+
+/* Barra de dificultad: el color no es la unica senal, el numero tambien se lee. */
+.medidor {
+    height: 0.5rem;
+}
+
+.tarjeta-guia {
+    height: 100%;
+    transition: transform 0.15s ease-in-out;
+}
+
+.tarjeta-guia:hover {
+    transform: translateY(-4px);
+}
+
+/* Respeta a quien pidio menos animacion en su sistema. */
+@media (prefers-reduced-motion: reduce) {
+    .tarjeta-guia {
+        transition: none;
+    }
+    .tarjeta-guia:hover {
+        transform: none;
+    }
+}
