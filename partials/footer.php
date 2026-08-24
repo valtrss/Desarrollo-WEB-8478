@@ -15,12 +15,15 @@
             </div>
             <div class="col-12 col-md-3 mt-3 mt-md-0">
                 <p class="fw-bold mb-1">Proyecto</p>
-                <p class="small mb-0">Desarrollo Web 8478<br>Semana 2 &#183; 2026</p>
+                <p class="small mb-0">Desarrollo Web 8478<br>2026</p>
             </div>
         </div>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<?php if (isset($scriptPagina)) { ?>
+    <script src="<?php echo $scriptPagina; ?>"></script>
+<?php } ?>
 </body>
 </html>

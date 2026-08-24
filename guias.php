@@ -2,6 +2,7 @@
 require_once "datos.php";
 $titulo = "Guias";
 $activo = "guias";
+$scriptPagina = "js/guias.js";
 
 // Filtros que llegan por la URL. Sin parametros se muestran todas.
 $filtroPlataforma = isset($_GET["plataforma"]) ? $_GET["plataforma"] : "";
@@ -35,9 +36,16 @@ include "partials/navbar.php";
         -->
         <main id="contenido" class="col-12 col-md-8 col-lg-9 order-lg-2">
             <h1 class="h3 mb-1">Todas las guias</h1>
-            <p class="text-body-secondary" aria-live="polite">
+            <p class="text-body-secondary" id="contador" aria-live="polite">
                 <?php echo count($resultado); ?> guia(s) encontrada(s)
             </p>
+
+            <!-- El buscador lo maneja js/guias.js: filtra sin recargar la pagina -->
+            <div class="mb-4">
+                <label for="buscador" class="form-label">Buscar por juego</label>
+                <input type="search" class="form-control" id="buscador"
+                       placeholder="Escribe el nombre de un juego" autocomplete="off">
+            </div>
 
             <?php if (count($resultado) == 0) { ?>
                 <!-- Estado vacio: hay filtros aplicados pero ninguna guia calza -->
@@ -47,9 +55,10 @@ include "partials/navbar.php";
                     <a href="guias.php" class="btn btn-outline-primary">Ver todas</a>
                 </div>
             <?php } else { ?>
-                <div class="row g-4">
+                <div class="row g-4" id="listado">
                     <?php foreach ($resultado as $guia) { ?>
-                        <article class="col-12 col-lg-6">
+                        <article class="col-12 col-lg-6 tarjeta"
+                                 data-juego="<?php echo strtolower($guia["juego"]); ?>">
                             <div class="card tarjeta-guia">
                                 <div class="row g-0">
                                     <div class="col-4">
@@ -84,6 +93,12 @@ include "partials/navbar.php";
                             </div>
                         </article>
                     <?php } ?>
+                </div>
+
+                <!-- Estado vacio del buscador. Oculto hasta que JavaScript lo necesite. -->
+                <div id="sinResultados" class="text-center border rounded-3 p-5 d-none">
+                    <p class="fs-5 mb-1">Ningun juego coincide con tu busqueda</p>
+                    <p class="text-body-secondary mb-0">Prueba escribiendo solo una parte del nombre.</p>
                 </div>
             <?php } ?>
         </main>
