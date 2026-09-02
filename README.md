@@ -1,10 +1,9 @@
-# Ruta Platino
+# WEB para pastas frescas “La Nonna”
 
-Proyecto del ramo **Desarrollo Web 8478**. Blog de guias para conseguir el platino
-o el 100% de los logros en videojuegos de PlayStation y Steam.
+
+Proyecto del ramo **Desarrollo Web 8478**.
 
 Grupo: Simón Saavedra 
-
 ## Concepto
 
 Cada guia publica la informacion que suele faltar en las guias que circulan:
