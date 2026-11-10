@@ -1,0 +1,59 @@
+// Contrato gRPC interno entre orders e inventory (Modulo 9).
+//
+// Por que gRPC y no REST en esta operacion concreta:
+// la reserva de stock esta en el camino critico de confirmar un pedido, se
+// invoca en cada confirmacion, necesita un contrato tipado y un plazo maximo
+// estricto, y nunca la llama el navegador. Es trafico interno, de alta
+// frecuencia y baja latencia esperada. El resto de las operaciones del
+// catalogo siguen en REST porque las consume el frontend.
+
+syntax = "proto3";
+
+package lanonna.inventario;
+
+service Inventario {
+  // Reserva la produccion del dia para un pedido que aun no se paga.
+  rpc ReservarStock (SolicitudReserva) returns (RespuestaReserva);
+
+  // Devuelve al stock lo reservado por un pedido anulado o vencido.
+  rpc LiberarReserva (SolicitudPedido) returns (RespuestaLiberacion);
+
+  // Descuenta definitivamente lo reservado cuando el pago se confirma.
+  rpc ConsumirReserva (SolicitudPedido) returns (RespuestaLiberacion);
+}
+
+message ItemReserva {
+  string producto_id = 1;
+  int32  cantidad    = 2;
+}
+
+message SolicitudReserva {
+  string               pedido_id = 1;
+  repeated ItemReserva items     = 2;
+  string               correlacion = 3;
+}
+
+message ReservaCreada {
+  string reserva_id  = 1;
+  string producto_id = 2;
+  int32  cantidad    = 3;
+}
+
+message RespuestaReserva {
+  bool                   ok         = 1;
+  string                 codigo     = 2;  // vacio si ok; si no: stock_insuficiente, producto_no_disponible
+  repeated ReservaCreada reservas   = 3;
+  string                 expira_en  = 4;
+  string                 producto_id_problema = 5;
+  int32                  disponible = 6;
+}
+
+message SolicitudPedido {
+  string pedido_id   = 1;
+  string correlacion = 2;
+}
+
+message RespuestaLiberacion {
+  bool  ok        = 1;
+  int32 afectadas = 2;
+}

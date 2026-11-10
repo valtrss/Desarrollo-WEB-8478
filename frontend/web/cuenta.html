@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi cuenta - La Nonna</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/estilos.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Rayas de la grilla de 12 columnas, igual que el boceto -->
+<div class="nonna-rayas" aria-hidden="true"></div>
+
+<nav class="navbar navbar-expand-lg nonna-navbar">
+  <div class="container">
+    <a class="navbar-brand nonna-marca" href="/">LA NONNA</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" href="/catalogo.html">Catalogo</a></li>
+      </ul>
+      <div id="zona-sesion" class="d-flex align-items-center"></div>
+    </div>
+  </div>
+</nav>
+
+<main class="container py-4">
+  <div id="aviso" class="d-none"></div>
+
+  <!-- ENTRAR / REGISTRARSE -->
+  <div id="zona-acceso" class="row justify-content-center d-none">
+    <div class="col-lg-7">
+      <div class="nonna-card p-4">
+        <ul class="nav nav-tabs mb-4" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#panel-entrar">Entrar</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-registro">Crear cuenta</button></li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="panel-entrar">
+            <form id="form-entrar" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="correo">Correo</label>
+                <input class="form-control" type="email" id="correo" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="clave">Contrasena</label>
+                <input class="form-control" type="password" id="clave" required>
+              </div>
+              <button class="btn btn-nonna w-100" type="submit">Entrar</button>
+            </form>
+
+            <div class="d-flex align-items-center gap-2 my-3">
+              <hr class="flex-grow-1">
+              <span class="small text-secondary">o</span>
+              <hr class="flex-grow-1">
+            </div>
+
+            <button class="btn btn-nonna-linea w-100" id="btn-invitado" type="button">
+              Continuar como invitado
+            </button>
+            <p class="small text-secondary mt-2 mb-0">
+              Puedes comprar sin cuenta: al pagar te pedimos solo un correo
+              para enviarte la boleta. Si creas la cuenta,
+              <strong>ahorras 5% en tu primera compra</strong>.
+            </p>
+          </div>
+
+          <div class="tab-pane fade" id="panel-registro">
+            <form id="form-registro" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label" for="r-run">RUN</label>
+                  <input class="form-control" id="r-run" placeholder="12345678-5" required>
+                  <div class="form-text">Se valida el digito verificador en el servidor.</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="r-nombre">Nombre completo</label>
+                  <input class="form-control" id="r-nombre" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="r-correo">Correo</label>
+                  <input class="form-control" type="email" id="r-correo" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="r-clave">Contrasena</label>
+                  <input class="form-control" type="password" id="r-clave" required>
+                  <div class="form-text">Minimo 10 caracteres.</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="r-telefono">Telefono</label>
+                  <input class="form-control" id="r-telefono" placeholder="+56912345678" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="r-nacimiento">Fecha de nacimiento</label>
+                  <input class="form-control" type="date" id="r-nacimiento" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="r-direccion">Direccion</label>
+                  <input class="form-control" id="r-direccion" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="r-comuna">Comuna</label>
+                  <input class="form-control" id="r-comuna" value="Maipu" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="r-provincia">Provincia</label>
+                  <input class="form-control" id="r-provincia" value="Santiago" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="r-region">Region</label>
+                  <input class="form-control" id="r-region" value="Metropolitana" required>
+                </div>
+              </div>
+              <button class="btn btn-nonna w-100 mt-4" type="submit">Crear cuenta</button>
+              <p class="small text-secondary mt-2 mb-0">
+                Tus datos personales quedan restringidos: solo tu y el personal autorizado los ven.
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DEL CLIENTE -->
+  <div id="zona-cuenta" class="d-none">
+    <h1 class="h3 mb-4">Mi cuenta</h1>
+
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="nonna-card p-3">
+          <h2 class="h5">Mis datos</h2>
+          <dl class="row small mb-0" id="datos-perfil"></dl>
+        </div>
+
+        <!-- Solo visible para dueno o administrador -->
+        <div class="nonna-card p-3 mt-3 d-none" id="panel-dueno">
+          <h2 class="h5">Panel del dueno</h2>
+          <p class="small text-secondary">
+            Agregacion GraphQL de analytics + orders.
+          </p>
+          <dl class="row small mb-0" id="datos-dueno"></dl>
+        </div>
+      </div>
+
+      <div class="col-lg-8" id="pedidos">
+        <h2 class="h5 mb-3">Mis pedidos</h2>
+        <div id="lista-pedidos" class="d-flex flex-column gap-3">
+          <p class="text-secondary">Cargando...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal de anulacion: el motivo es obligatorio (RF3) -->
+<div class="modal fade" id="modal-anular" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Anular pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-secondary">
+          El pedido no se borra: queda registrado como anulado junto a tu motivo.
+        </p>
+        <label class="form-label" for="motivo">Motivo</label>
+        <textarea class="form-control" id="motivo" rows="3"
+                  placeholder="Cuentanos por que lo anulas (minimo 10 caracteres)"></textarea>
+        <div id="error-motivo" class="small text-danger mt-2 d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+        <button class="btn btn-danger" id="btn-confirmar-anular">Anular pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="nonna-footer py-4 mt-5">
+  <div class="container">
+    <p class="small text-secondary mb-0">Pastas Frescas La Nonna &middot; Desarrollo Web 8478</p>
+  </div>
+</footer>
+
+<script type="module" src="/js/cuenta.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

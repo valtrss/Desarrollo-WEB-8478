@@ -1,0 +1,23 @@
+{
+  "name": "lanonna-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend seguro - caso Pastas Frescas La Nonna - Desarrollo Web 8478",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "secrets": "node scripts/generar-secretos.js",
+    "migrate": "node scripts/migrar.js",
+    "seed": "node scripts/sembrar.js",
+    "start": "node scripts/arrancar.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.2",
+    "@grpc/proto-loader": "^0.7.13",
+    "express": "4.21.1",
+    "graphql": "16.9.0"
+  }
+}

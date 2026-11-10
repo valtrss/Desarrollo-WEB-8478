@@ -10,3 +10,12 @@
 # Logs y temporales
 *.log
 *.tmp
+
+# Node
+node_modules/
+
+# Datos y secretos: NUNCA se versionan
+backend/data/*.db
+backend/data/*.db-*
+backend/secrets/*
+!backend/secrets/*.example

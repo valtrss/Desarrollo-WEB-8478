@@ -1,0 +1,209 @@
+/* Pastas Frescas La Nonna
+   Sobre Bootstrap 5.
+   La paleta sale del boceto exportado de Figma (frontend/01-home.svg):
+   tinta #2E3138, lineas #8A9099, superficies #F3F4F6 y #E6E8EC,
+   y las rayas de la grilla de 12 columnas en #E8563F. */
+
+:root {
+  --nonna-tinta: #2e3138;
+  --nonna-linea: #8a9099;
+  --nonna-borde: #c3c7ce;
+  --nonna-superficie: #f3f4f6;
+  --nonna-superficie-2: #e6e8ec;
+  --nonna-raya: #e8563f;
+  --nonna-acento: #c0392b;
+
+  /* Grilla del boceto: contenedor 1320, 12 columnas de 86, gutter 24. */
+  --nonna-contenedor: 1320px;
+  --nonna-banda: 86px;          /* ancho de columna */
+  --nonna-paso: 110px;          /* columna + gutter */
+}
+
+/* Pie siempre abajo, aunque la pagina tenga un solo producto.
+   min-height y NO height: con height fijo el contenido se desborda de la
+   caja flex y el pie termina quedando por encima. */
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: var(--nonna-tinta);
+}
+
+body > main { flex: 1 0 auto; }
+body > footer { margin-top: auto; }
+
+/* --- Las rayas de la grilla de 12 columnas -------------------------------
+   Capa fija detras del contenido, alineada al contenedor de Bootstrap.
+   Es el mismo trazado del boceto, no una decoracion arbitraria. */
+.nonna-rayas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Las bandas cubren TODO el ancho de la ventana, pero conservan el paso de
+   la grilla (banda 86px, gutter 24px, paso 110px) y quedan alineadas con el
+   contenedor de 1320px: la primera banda empieza donde empieza la columna 1. */
+.nonna-rayas::before {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+  opacity: 0.1;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--nonna-raya) 0 86px,
+    transparent 86px 110px
+  );
+  background-position: calc(50% - 648px) 0;
+}
+
+/* El contenido va por encima de las rayas. */
+body > nav,
+body > header,
+body > main,
+body > footer { position: relative; z-index: 1; }
+
+/* --- Cabecera ------------------------------------------------------------ */
+.nonna-navbar {
+  background: #fff;
+  border-bottom: 2px solid var(--nonna-tinta);
+}
+
+.nonna-navbar .navbar-brand,
+.nonna-navbar .nav-link { color: var(--nonna-tinta); }
+.nonna-navbar .nav-link:hover { color: var(--nonna-acento); }
+.nonna-navbar .nav-link.active { font-weight: 600; }
+
+.nonna-marca {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1.5px solid var(--nonna-linea);
+  background: var(--nonna-superficie-2);
+  border-radius: 4px;
+  padding: 0.35rem 0.9rem !important;
+}
+
+/* Transparente a proposito: las rayas de la grilla tienen que verse detras
+   del hero, igual que en el boceto. */
+.nonna-hero {
+  background: transparent;
+  border-bottom: 1px solid var(--nonna-borde);
+}
+
+.nonna-hero h1 { font-weight: 700; line-height: 1.1; }
+
+.nonna-aviso-stock {
+  background: var(--nonna-superficie-2);
+  border: 1.5px solid var(--nonna-linea);
+  border-radius: 8px;
+}
+
+/* --- Tarjetas ------------------------------------------------------------ */
+.nonna-card {
+  background: #fff;
+  border: 1.5px solid var(--nonna-linea);
+  border-radius: 4px;
+}
+
+/* Altura pareja solo donde se necesita (grillas de productos). Ponerla en
+   .nonna-card estiraba tambien la tarjeta del carrito y su contenido se
+   desbordaba por debajo, tapando el aviso de la regla de negocio. */
+.nonna-card.h-100 { height: 100%; }
+
+/* Marcador de imagen con las aspas del boceto. */
+.nonna-figura {
+  aspect-ratio: 16 / 9;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--nonna-borde) calc(50% - 0.5px), var(--nonna-borde) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--nonna-borde) calc(50% - 0.5px), var(--nonna-borde) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    var(--nonna-superficie-2);
+  border-bottom: 1.5px solid var(--nonna-linea);
+  border-radius: 3px 3px 0 0;
+}
+
+.nonna-precio { font-size: 1.25rem; font-weight: 700; }
+
+.nonna-badge-stock {
+  background: var(--nonna-superficie);
+  border: 1px solid var(--nonna-linea);
+  border-radius: 999px;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
+}
+
+/* --- Botones ------------------------------------------------------------- */
+.btn-nonna {
+  background: var(--nonna-tinta);
+  border: 1.5px solid var(--nonna-tinta);
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-nonna:hover,
+.btn-nonna:focus { background: #1b1d22; border-color: #1b1d22; color: #fff; }
+
+.btn-nonna-linea {
+  background: #fff;
+  border: 1.5px solid var(--nonna-tinta);
+  border-radius: 999px;
+  color: var(--nonna-tinta);
+  font-weight: 600;
+}
+
+.btn-nonna-linea:hover { background: var(--nonna-superficie); color: var(--nonna-tinta); }
+
+/* --- Pasos --------------------------------------------------------------- */
+.nonna-paso {
+  background: var(--nonna-superficie);
+  border: 1.5px solid var(--nonna-linea);
+  border-radius: 8px;
+}
+
+.nonna-paso .numero {
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 2px solid var(--nonna-tinta);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+/* Anotacion de trazabilidad, igual que las etiquetas rojas del boceto. */
+.nonna-nota {
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 0.72rem;
+  color: var(--nonna-acento);
+}
+
+.nonna-footer {
+  background: var(--nonna-superficie);
+  border-top: 1.5px solid var(--nonna-linea);
+}
+
+.nonna-regla {
+  border: 1.5px solid var(--nonna-acento);
+  border-radius: 8px;
+  background: #fff;
+}
+
+a { color: var(--nonna-acento); }
+a:hover { color: #8e2a17; }
+
+/* El resumen del carrito acompana el scroll en escritorio y vuelve al flujo
+   normal en movil, igual que anota el boceto. */
+@media (min-width: 992px) {
+  .nonna-sticky { position: sticky; top: 1rem; }
+}
+
+/* Las rayas estorban en pantallas chicas, donde la grilla ya no es de 12. */
+@media (max-width: 767.98px) {
+  .nonna-rayas { display: none; }
+}

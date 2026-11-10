@@ -1,0 +1,39 @@
+Prueba de carga - Pastas Frescas La Nonna
+  entorno: Node v26.0.0 sobre Darwin 25.6.0 (arm64)
+  maquina: 18 nucleos, 24.0 GB de RAM
+  parametros: concurrencia 100, duracion 8 s por escenario
+  objetivos: p95 < 200 ms, 500 req/s, 0% errores
+
+  A1. Catalogo por el API Gateway (con limite de solicitudes activo)
+    solicitudes 255394  aceptadas 120  rechazadas por limite 255274 (99.95%)  errores 0 (0%)
+    p50 14.77 ms   p95 17.15 ms   p99 17.38 ms   max 17.64 ms
+    throughput 31920.3 req/s
+
+  A2. Catalogo en el servicio interno (capacidad sin el limite)
+    solicitudes 91146  aceptadas 91146  rechazadas por limite 0 (0%)  errores 0 (0%)
+    p50 8.24 ms   p95 11.69 ms   p99 16.62 ms   max 403.6 ms
+    throughput 11381.9 req/s
+
+  B. Reserva de stock por gRPC (unary, con deadline)
+    solicitudes 30000  aceptadas 30000  rechazadas por limite 0 (0%)  errores 0 (0%)
+    p50 25.94 ms   p95 30.18 ms   p99 31.84 ms   max 61.59 ms
+    throughput 3739.7 req/s
+
+  C. La misma reserva por REST (alternativa descartada)
+    solicitudes 34423  aceptadas 34423  rechazadas por limite 0 (0%)  errores 0 (0%)
+    p50 22.07 ms   p95 30.82 ms   p99 37.08 ms   max 328.04 ms
+    throughput 4293.2 req/s
+
+--- comparacion con los objetivos declarados ---
+  catalogo  p95   17.15 ms  CUMPLE    throughput  31920.3 req/s  CUMPLE    errores 0%  CUMPLE
+  catalogoInterno p95   11.69 ms  CUMPLE    throughput  11381.9 req/s  CUMPLE    errores 0%  CUMPLE
+  grpc      p95   30.18 ms  CUMPLE    throughput   3739.7 req/s  CUMPLE    errores 0%  CUMPLE
+  rest      p95   30.82 ms  CUMPLE    throughput   4293.2 req/s  CUMPLE    errores 0%  CUMPLE
+
+  gRPC vs REST en la misma operacion: p95 30.18 ms contra 30.82 ms (-2.1% para gRPC)
+  CPU del proceso de prueba: 25145 ms usuario, 2789 ms sistema
+  Memoria RSS del proceso de prueba: 79 MB -> 250 MB
+
+Nota: la medicion corre en la misma maquina que los servicios, asi que
+incluye el costo del propio generador de carga. Sirve para comparar los
+tres escenarios entre si, no como cifra de produccion.
