@@ -16,7 +16,8 @@ const {
   PageOrientation, LevelFormat, convertInchesToTwip,
 } = require('docx');
 
-const RAIZ = '/Applications/XAMPP/xamppfiles/htdocs/Desarrollo-WEB-8478';
+// Ruta relativa al propio archivo: funciona en cualquier equipo y sistema.
+const RAIZ = path.resolve(__dirname, '..', '..');
 const BASE_IMG = path.join(RAIZ, 'docs');
 const ENTRADA = path.join(RAIZ, 'docs', 'informe-arquitectura.md');
 const SALIDA = path.join(RAIZ, 'docs', 'Informe de Arquitectura - Pastas Frescas La Nonna.docx');

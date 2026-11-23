@@ -11,7 +11,9 @@ import math
 import os
 import random
 
-OUT = "/Applications/XAMPP/xamppfiles/htdocs/Desarrollo-WEB-8478/frontend/web/img"
+# Rutas relativas al propio archivo: funciona en cualquier equipo y sistema.
+RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(RAIZ, "frontend", "web", "img")
 os.makedirs(OUT, exist_ok=True)
 
 W, H = 640, 360

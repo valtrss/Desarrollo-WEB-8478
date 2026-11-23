@@ -7,6 +7,11 @@
 import { abrirBase } from '../shared/db.js';
 import { hashearClave } from '../shared/clave.js';
 
+// Estos scripts no necesitan la bitacora detallada: interesa el resumen.
+// Se fija aqui, dentro del programa, para que el comando sea identico en
+// macOS, Linux y Windows.
+process.env.BITACORA ??= 'silencio';
+
 const ahora = new Date().toISOString();
 
 // --- clients ----------------------------------------------------------------

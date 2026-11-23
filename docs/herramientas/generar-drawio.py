@@ -8,7 +8,9 @@ herramienta y exportacion a PNG/SVG/PDF desde el menu Archivo.
 import os
 from xml.sax.saxutils import escape
 
-OUT = "/Applications/XAMPP/xamppfiles/htdocs/Desarrollo-WEB-8478/docs/diagramas"
+# Rutas relativas al propio archivo: funciona en cualquier equipo y sistema.
+RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(RAIZ, "docs", "diagramas")
 os.makedirs(OUT, exist_ok=True)
 
 TINTA = "#2E3138"

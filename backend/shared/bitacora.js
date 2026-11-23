@@ -15,8 +15,12 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 export const contexto = new AsyncLocalStorage();
 
-const JSON_PURO = process.env.BITACORA === 'json';
-const SILENCIO = process.env.BITACORA === 'silencio';
+// Se consultan al momento de escribir, no al importar: asi un script puede
+// fijar process.env.BITACORA en su propio cuerpo y no depende de poder poner
+// «VARIABLE=valor» delante del comando, que es sintaxis de shell de Unix y no
+// existe en el cmd ni en PowerShell de Windows.
+const JSON_PURO = () => process.env.BITACORA === 'json';
+const SILENCIO = () => process.env.BITACORA === 'silencio';
 const SIN_COLOR = process.env.NO_COLOR !== undefined || !process.stdout.isTTY;
 
 const C = {
@@ -86,10 +90,10 @@ const corto = (c) => (c ? String(c).replace(/-/g, '').slice(0, 8) : '·····�
  * @param {object} [datos]   pares clave=valor que se muestran al final
  */
 export function anotar(servicio, evento, mensaje, datos) {
-  if (SILENCIO) return;
+  if (SILENCIO()) return;
   const correlacion = correlacionActual();
 
-  if (JSON_PURO) {
+  if (JSON_PURO()) {
     console.log(JSON.stringify({
       hora: new Date().toISOString(), servicio, evento, correlacion, mensaje, ...datos,
     }));
@@ -118,7 +122,7 @@ export function anotar(servicio, evento, mensaje, datos) {
 // Cabecera al arrancar cada servicio, para que se vea de que contenedor es
 // la ventana que se esta mostrando.
 export function cabecera(servicio, detalle) {
-  if (JSON_PURO) return;
+  if (JSON_PURO()) return;
   const color = COLOR_SERVICIO[servicio] ?? C.reset;
   const titulo = ` ${servicio.toUpperCase()} `;
   const raya = '─'.repeat(Math.max(0, 62 - titulo.length));

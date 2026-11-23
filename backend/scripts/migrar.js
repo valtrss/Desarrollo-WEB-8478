@@ -8,6 +8,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { abrirBase } from '../shared/db.js';
 
+// Estos scripts no necesitan la bitacora detallada: interesa el resumen.
+// Se fija aqui, dentro del programa, para que el comando sea identico en
+// macOS, Linux y Windows.
+process.env.BITACORA ??= 'silencio';
+
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SERVICIOS = ['auth', 'clients', 'inventory', 'orders', 'payments', 'analytics'];
 

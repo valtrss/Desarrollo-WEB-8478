@@ -7,14 +7,45 @@ Asi el PNG que va al informe sale del mismo motor que dibuja diagrams.net.
 """
 import json
 import os
+import shutil
 import subprocess
+import tempfile
 from html import escape
 
-DOCS = "/Applications/XAMPP/xamppfiles/htdocs/Desarrollo-WEB-8478/docs"
+# Rutas relativas al propio archivo: funciona en cualquier equipo y sistema.
+RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DOCS = os.path.join(RAIZ, "docs")
 DIAGRAMAS = os.path.join(DOCS, "diagramas")
 PNG = os.path.join(DOCS, "png")
-TEMP = "/private/tmp/claude-501/-Users-saavedra-Desktop-Universidad/cf7efa5b-3776-42e7-b767-3605c27b9ed3/scratchpad/render"
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+TEMP = os.path.join(tempfile.gettempdir(), "render-drawio")
+
+
+def buscar_chrome():
+    """Chrome o Edge, en macOS, Windows y Linux. Cualquiera sirve: los dos
+    usan el mismo motor y el modo headless se invoca igual."""
+    env = os.environ.get("CHROME")
+    if env:
+        return env
+    candidatos = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    ]
+    for c in candidatos:
+        if os.path.exists(c):
+            return c
+    for c in ("google-chrome", "chromium", "chrome", "msedge"):
+        encontrado = shutil.which(c)
+        if encontrado:
+            return encontrado
+    raise SystemExit(
+        "No se encontro Chrome ni Edge. Indique la ruta con la variable CHROME."
+    )
+
+
+CHROME = buscar_chrome()
 
 os.makedirs(PNG, exist_ok=True)
 os.makedirs(TEMP, exist_ok=True)

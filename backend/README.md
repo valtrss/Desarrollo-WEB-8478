@@ -7,6 +7,9 @@ Evaluación Unidad 2, Desarrollo Web 8478.
 
 - Node.js 22.5 o superior (usa `node:sqlite`, incluido en Node; no hay módulos nativos que compilar).
 - Nada más. No requiere Docker, ni motor de base de datos aparte, ni cuenta de nube.
+- Funciona igual en macOS, Linux y Windows. Los comandos de abajo son los mismos
+  en los tres: ninguno depende de sintaxis del shell. En Windows sirve tanto
+  PowerShell como el cmd.
 
 ## Puesta en marcha
 
