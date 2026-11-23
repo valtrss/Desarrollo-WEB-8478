@@ -12,7 +12,17 @@
     "migrate": "node scripts/migrar.js",
     "seed": "node scripts/sembrar.js",
     "start": "node scripts/arrancar.js",
-    "test": "node --test --test-concurrency=1 tests/*.test.js"
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "demo:gateway": "node gateways/api-gateway/servidor.js",
+    "demo:auth": "node services/auth/servidor.js",
+    "demo:clients": "node services/clients/servidor.js",
+    "demo:inventory": "node services/inventory/servidor.js",
+    "demo:orders": "node services/orders/servidor.js",
+    "demo:payments": "node services/payments/servidor.js",
+    "demo:analytics": "node services/analytics/servidor.js",
+    "demo:graphql": "node gateways/graphql-gateway/servidor.js",
+    "demo:frontend": "node scripts/servir-frontend.js",
+    "demo:guion": "node scripts/demostracion.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.12.2",

@@ -1,6 +1,7 @@
 # Backend — Pastas Frescas La Nonna
 
-Sistema de ventas on-line del caso. Evaluación Unidad 2, Desarrollo Web 8478.
+Caso 33: Pastas Frescas "La Nonna".
+Evaluación Unidad 2, Desarrollo Web 8478.
 
 ## Requisitos
 

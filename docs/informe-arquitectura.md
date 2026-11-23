@@ -6,7 +6,7 @@
 LaNonnaBackend
 
 **Número y nombre del caso de negocio**
-Pastas Frescas "La Nonna" — Sistema de ventas on-line con despacho a domicilio
+33. Pastas Frescas "La Nonna"
 
 **Integrantes**
 Simón Saavedra (trabajo individual)

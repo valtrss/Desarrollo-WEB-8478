@@ -11,6 +11,7 @@ import { exigirIdentidadInterna, llamarServicio } from '../../shared/identidad.j
 import { emitir, verificar } from '../../shared/jwt.js';
 import { obtenerSecreto } from '../../shared/secretos.js';
 import { exigirCorreo, exigirTexto } from '../../shared/validacion.js';
+import { anotar } from '../../shared/bitacora.js';
 
 const NOMBRE = 'auth';
 const PUERTO = 4000;
@@ -29,6 +30,9 @@ app.post('/auth/login', ruta(async (req, res) => {
   const correo = exigirCorreo(req.body?.correo);
   const password = exigirTexto(req.body?.password, 'password', { min: 1, max: 128 });
 
+  anotar(NOMBRE, 'CREDENCIAL', 'solicitud de validación de credencial', { correo });
+  anotar(NOMBRE, 'LLAMA', 'pide a clients que verifique la contraseña (él es su custodio)',
+    { destino: 'clients :4001' });
   const respuesta = await llamarServicio(CLIENTS + '/internal/credenciales/verificar', {
     metodo: 'POST',
     cuerpo: { correo, password },
@@ -37,14 +41,20 @@ app.post('/auth/login', ruta(async (req, res) => {
   });
 
   if (respuesta.estado === 429) {
+    anotar(NOMBRE, 'RECHAZO', 'cuenta bloqueada por intentos fallidos', { correo, resultado: '429' });
     fallar(429, 'demasiados_intentos', 'Demasiados intentos. Intente nuevamente en unos minutos.');
   }
   if (!respuesta.ok) {
     // Mismo mensaje para correo inexistente y clave incorrecta.
+    anotar(NOMBRE, 'RECHAZO', 'credencial inválida (mismo mensaje que cuenta inexistente)',
+      { resultado: '401' });
     fallar(401, 'credenciales_invalidas', 'Correo o contrasena incorrectos.');
   }
 
   const cuenta = respuesta.datos;
+  anotar(NOMBRE, 'CREDENCIAL', 'clients confirma la credencial',
+    { sub: cuenta.id, rol: cuenta.rol, verificacion: cuenta.estadoVerificacion });
+
   if (cuenta.estadoVerificacion !== 'verificado') {
     fallar(403, 'correo_no_verificado',
       'Debe confirmar su correo antes de iniciar sesion.');
@@ -55,6 +65,9 @@ app.post('/auth/login', ruta(async (req, res) => {
     obtenerSecreto('jwt-firma-usuario'),
     VIDA_SESION_SEGUNDOS
   );
+
+  anotar(NOMBRE, 'TOKEN', 'emite sesión firmada con «jwt-firma-usuario»',
+    { sub: cuenta.id, rol: cuenta.rol, vidaSegundos: VIDA_SESION_SEGUNDOS });
 
   res.json({
     accessToken,
@@ -112,6 +125,8 @@ app.post('/auth/logout', ruta((req, res) => {
 // ---------------------------------------------------------------------------
 app.get('/internal/revocada/:jti', ruta((req, res) => {
   const fila = db.prepare('SELECT 1 AS existe FROM sesiones_revocadas WHERE jti = ?').get(req.params.jti);
+  anotar(NOMBRE, 'AUTORIZA', 'el gateway consultó revocación de sesión',
+    { jti: String(req.params.jti).slice(0, 8), revocada: Boolean(fila) });
   res.json({ revocada: Boolean(fila) });
 }));
 
@@ -121,4 +136,6 @@ setInterval(() => {
 }, 60_000).unref();
 
 montarManejadorDeErrores(app, NOMBRE);
-escucharPrivado(app, PUERTO, NOMBRE);
+escucharPrivado(app, PUERTO, NOMBRE, [
+  'unico emisor de sesiones (RF12); NO almacena contrasenas',
+]);

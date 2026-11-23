@@ -7,6 +7,7 @@
 // Un valor nunca se imprime, nunca viaja al navegador y nunca se escribe en logs.
 
 import { readFileSync, existsSync } from 'node:fs';
+import { anotar, contexto } from './bitacora.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -54,7 +55,13 @@ export function obtenerSecreto(referencia) {
   if (!INVENTARIO[referencia]) {
     throw new Error(`Referencia de secreto no declarada en el inventario: ${referencia}`);
   }
-  if (cache.has(referencia)) return cache.get(referencia);
+  const quien = contexto.getStore()?.servicio ?? 'secretos';
+
+  if (cache.has(referencia)) {
+    anotar(quien, 'SECRETO', `usa la credencial «${referencia}»`,
+      { origen: 'cache en memoria', finalidad: INVENTARIO[referencia].finalidad });
+    return cache.get(referencia);
+  }
 
   const ruta = join(CARPETA, referencia);
   if (!existsSync(ruta)) {
@@ -63,6 +70,10 @@ export function obtenerSecreto(referencia) {
   const valor = readFileSync(ruta, 'utf8').trim();
   if (!valor) throw new Error(`El secreto "${referencia}" esta vacio.`);
   cache.set(referencia, valor);
+
+  // Se registra la REFERENCIA y nunca el valor.
+  anotar(quien, 'SECRETO', `pide «${referencia}» al administrador de secretos`,
+    { emisor: INVENTARIO[referencia].emisor, alcance: INVENTARIO[referencia].alcance });
   return valor;
 }
 

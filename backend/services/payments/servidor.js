@@ -13,6 +13,7 @@ import { crearApp, montarManejadorDeErrores, escucharPrivado, ruta, fallar } fro
 import { exigirIdentidadInterna, exigirRol, llamarServicio } from '../../shared/identidad.js';
 import { obtenerSecreto } from '../../shared/secretos.js';
 import { exigirTexto, exigirUnoDe } from '../../shared/validacion.js';
+import { anotar } from '../../shared/bitacora.js';
 
 const NOMBRE = 'payments';
 const PUERTO = 4004;
@@ -115,17 +116,17 @@ function firmaValida(cuerpoCrudo, firmaRecibida) {
 app.post('/payments/webhook', ruta(async (req, res) => {
   const cuerpoCrudo = JSON.stringify(req.body ?? {});
   if (!firmaValida(cuerpoCrudo, req.get('x-signature'))) {
-    console.warn(JSON.stringify({
-      servicio: NOMBRE, correlacion: req.identidad.correlacion,
-      evento: 'webhook_firma_invalida',
-    }));
+    anotar(NOMBRE, 'RECHAZO', 'firma HMAC del proveedor INVALIDA: aviso descartado',
+      { secreto: 'pagos-webhook', resultado: '401' });
     fallar(401, 'firma_invalida', 'Firma de la notificacion invalida.');
   }
+  anotar(NOMBRE, 'FIRMA', 'firma HMAC del proveedor verificada con «pagos-webhook»');
 
   const clave = exigirTexto(req.get('x-idempotency-key'), 'x-idempotency-key', { max: 100 });
   const yaProcesada = db.prepare('SELECT * FROM notificaciones WHERE idempotency_key = ?').get(clave);
   if (yaProcesada) {
-    // Segunda entrega de la misma notificacion: se acepta y no se repite nada.
+    anotar(NOMBRE, 'NEGOCIO', 'aviso repetido: idempotencia evita procesarlo dos veces',
+      { clave: clave.slice(0, 8) });
     return res.json({ estado: 'ya_procesada', resultado: yaProcesada.resultado });
   }
 
@@ -226,4 +227,6 @@ app.get('/invoices/:pedidoId', ruta((req, res) => {
 }));
 
 montarManejadorDeErrores(app, NOMBRE);
-escucharPrivado(app, PUERTO, NOMBRE);
+escucharPrivado(app, PUERTO, NOMBRE, [
+  'unico que puede declarar un pago confirmado (RF2, RF8)',
+]);

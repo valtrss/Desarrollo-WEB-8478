@@ -3,6 +3,7 @@
 
 import express from 'express';
 import { randomUUID } from 'node:crypto';
+import { anotar, contexto, cabecera } from './bitacora.js';
 
 // Error de negocio con codigo HTTP. Lo que llega al cliente es el mensaje,
 // nunca el stack ni el detalle interno.
@@ -40,24 +41,25 @@ export function crearApp(nombreServicio) {
   app.use(express.json({ limit: '100kb' }));
   app.disable('x-powered-by');
 
-  // Identificador de correlacion: permite seguir una solicitud por todos los servicios.
+  // Identificador de correlacion: permite seguir una solicitud por todos los
+  // servicios. Se guarda en AsyncLocalStorage para que lo vean tambien las
+  // capas que no reciben `req`, como la de persistencia.
   app.use((req, res, next) => {
     req.correlacion = req.get('x-correlation-id') || randomUUID();
     res.set('x-correlation-id', req.correlacion);
-    const inicio = Date.now();
-    res.on('finish', () => {
-      console.log(
-        JSON.stringify({
-          servicio: nombreServicio,
-          correlacion: req.correlacion,
-          metodo: req.method,
-          ruta: req.path,
-          estado: res.statusCode,
-          ms: Date.now() - inicio,
-        })
-      );
+
+    contexto.run({ correlacion: req.correlacion, servicio: nombreServicio }, () => {
+      const inicio = Date.now();
+      if (req.path !== '/health') {
+        anotar(nombreServicio, 'PETICION', `${req.method} ${req.path}`);
+      }
+      res.on('finish', () => {
+        if (req.path === '/health') return;
+        anotar(nombreServicio, 'RESPUESTA', `${res.statusCode} ${req.method} ${req.path}`,
+          { ms: Date.now() - inicio });
+      });
+      next();
     });
-    next();
   });
 
   app.get('/health', (req, res) => res.json({ servicio: nombreServicio, estado: 'ok' }));
@@ -98,8 +100,12 @@ export function montarManejadorDeErrores(app, nombreServicio) {
 // Los servicios privados se enlazan SOLO a la interfaz de loopback.
 // Desde otra maquina de la red no son alcanzables: esa es la frontera privada
 // que el Modulo 10 pide demostrar sin contenedores.
-export function escucharPrivado(app, puerto, nombreServicio) {
+export function escucharPrivado(app, puerto, nombreServicio, notas = []) {
   return app.listen(puerto, '127.0.0.1', () => {
-    console.log(`[${nombreServicio}] privado en http://127.0.0.1:${puerto}`);
+    cabecera(nombreServicio, [
+      `PRIVADO en 127.0.0.1:${puerto}  ·  inalcanzable desde el navegador`,
+      'exige identidad interna firmada por el gateway en cada llamada',
+      ...notas,
+    ]);
   });
 }

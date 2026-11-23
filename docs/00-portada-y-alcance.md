@@ -1,6 +1,6 @@
 # Evaluación Unidad 2 — Backend seguro completo
 
-**Caso:** Pastas Frescas "La Nonna" — sistema de ventas on-line con despacho a domicilio
+**Caso 33:** Pastas Frescas "La Nonna"
 **Ramo:** Desarrollo Web 8478
 **Integrante:** Simón Saavedra (trabajo individual)
 **Versión del frontend de partida:** bocetos low-fi v1 (`frontend/01-home.svg`, `02-catalogo.svg`, `03-carrito.svg`)

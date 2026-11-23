@@ -12,6 +12,7 @@ import protoLoader from '@grpc/proto-loader';
 import { reservarStock, liberarReservasDePedido, consumirReservasDePedido, ErrorStock } from './stock.js';
 import { verificar } from '../../shared/jwt.js';
 import { obtenerSecreto } from '../../shared/secretos.js';
+import { anotar, contexto } from '../../shared/bitacora.js';
 
 const RUTA_PROTO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'proto', 'inventario.proto');
 const PUERTO_GRPC = 50051;
@@ -34,6 +35,8 @@ function identidadDe(llamada) {
 function exigirIdentidad(llamada, callback) {
   const identidad = identidadDe(llamada);
   if (!identidad) {
+    anotar('inventory', 'RECHAZO',
+      'llamada gRPC sin identidad de servicio válida', { resultado: 'UNAUTHENTICATED' });
     callback({
       code: grpc.status.UNAUTHENTICATED,
       message: 'Identidad de servicio invalida o ausente.',
@@ -43,11 +46,23 @@ function exigirIdentidad(llamada, callback) {
   return identidad;
 }
 
+// El canal gRPC vive fuera del ciclo HTTP, asi que no hereda el contexto de
+// correlacion. Se reconstruye desde el campo `correlacion` del propio mensaje
+// .proto, para que la reserva se pueda seguir junto al resto de la llamada.
+function enContexto(llamada, identidad, fn) {
+  const correlacion = llamada.request?.correlacion || identidad?.correlacion || null;
+  return contexto.run({ correlacion, servicio: 'inventory' }, fn);
+}
+
 const servicio = {
   ReservarStock(llamada, callback) {
-    if (!exigirIdentidad(llamada, callback)) return;
+    const identidad = exigirIdentidad(llamada, callback);
+    if (!identidad) return;
+    return enContexto(llamada, identidad, () => {
 
     const { pedido_id: pedidoId, items } = llamada.request;
+    anotar('inventory', 'GRPC', 'ReservarStock (unary) recibida por el canal interno',
+      { pedido: pedidoId, items: items?.length ?? 0 });
     if (!pedidoId || !Array.isArray(items) || items.length === 0) {
       return callback({
         code: grpc.status.INVALID_ARGUMENT,
@@ -84,19 +99,29 @@ const servicio = {
       }
       callback({ code: grpc.status.INTERNAL, message: 'No se pudo reservar el stock.' });
     }
+    });
   },
 
   // Idempotente: repetir la liberacion de un pedido ya liberado devuelve 0.
   LiberarReserva(llamada, callback) {
-    if (!exigirIdentidad(llamada, callback)) return;
-    const afectadas = liberarReservasDePedido(llamada.request.pedido_id);
-    callback(null, { ok: true, afectadas });
+    const identidad = exigirIdentidad(llamada, callback);
+    if (!identidad) return;
+    return enContexto(llamada, identidad, () => {
+      anotar('inventory', 'GRPC', 'LiberarReserva (unary)', { pedido: llamada.request.pedido_id });
+      const afectadas = liberarReservasDePedido(llamada.request.pedido_id);
+      callback(null, { ok: true, afectadas });
+    });
   },
 
   ConsumirReserva(llamada, callback) {
-    if (!exigirIdentidad(llamada, callback)) return;
-    const afectadas = consumirReservasDePedido(llamada.request.pedido_id);
-    callback(null, { ok: true, afectadas });
+    const identidad = exigirIdentidad(llamada, callback);
+    if (!identidad) return;
+    return enContexto(llamada, identidad, () => {
+      anotar('inventory', 'GRPC', 'ConsumirReserva (unary): el stock sale de bodega',
+        { pedido: llamada.request.pedido_id });
+      const afectadas = consumirReservasDePedido(llamada.request.pedido_id);
+      callback(null, { ok: true, afectadas });
+    });
   },
 };
 
@@ -111,7 +136,8 @@ export function iniciarServidorGrpc() {
         console.error('[inventory] no se pudo abrir el canal gRPC:', error.message);
         return;
       }
-      console.log(`[inventory] gRPC privado en 127.0.0.1:${PUERTO_GRPC}`);
+      anotar('inventory', 'GRPC', `canal interno escuchando en 127.0.0.1:${PUERTO_GRPC}`,
+        { contrato: 'lanonna.inventario.Inventario' });
     }
   );
   return servidor;

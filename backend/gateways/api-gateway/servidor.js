@@ -20,6 +20,7 @@ import { RUTAS, DESTINOS, NO_PUBLICADAS } from './rutas.js';
 import { verificar } from '../../shared/jwt.js';
 import { obtenerSecreto, describirInventario } from '../../shared/secretos.js';
 import { emitirIdentidadInterna, CABECERA } from '../../shared/identidad.js';
+import { anotar, contexto, cabecera } from '../../shared/bitacora.js';
 
 const NOMBRE = 'api-gateway';
 const PUERTO = 8080;
@@ -55,12 +56,26 @@ app.use((req, res, next) => {
 // --- frontera de confianza --------------------------------------------------
 // Si el navegador manda una identidad interna, se descarta aqui mismo.
 app.use((req, res, next) => {
+  const intentoDeSuplantacion = Boolean(
+    req.headers[CABECERA] || req.headers['x-user-id'] || req.headers['x-rol']
+  );
   delete req.headers[CABECERA];
   delete req.headers['x-user-id'];
   delete req.headers['x-rol'];
+
   req.correlacion = randomUUID();
   res.set('x-correlation-id', req.correlacion);
-  next();
+
+  contexto.run({ correlacion: req.correlacion, servicio: NOMBRE }, () => {
+    if (req.path !== '/health') {
+      anotar(NOMBRE, 'PETICION', `${req.method} ${req.originalUrl}`, { origen: req.ip });
+    }
+    if (intentoDeSuplantacion) {
+      anotar(NOMBRE, 'RECHAZO',
+        'el navegador envió cabeceras de identidad interna: DESCARTADAS');
+    }
+    next();
+  });
 });
 
 // --- limite de solicitudes por ruta e IP ------------------------------------
@@ -81,16 +96,26 @@ function dentroDelLimite(clave, limitePorMinuto) {
 
 // --- validacion de sesion ---------------------------------------------------
 async function sesionDe(req) {
-  const cabecera = req.get('authorization') ?? '';
-  if (!cabecera.startsWith('Bearer ')) return null;
+  const autorizacion = req.get('authorization') ?? '';
+  if (!autorizacion.startsWith('Bearer ')) return null;
 
-  const payload = verificar(cabecera.slice(7), obtenerSecreto('jwt-firma-usuario'));
-  if (!payload) return null;
+  // AuthenticationPolicy: valida la firma del token con la clave que entrega
+  // el administrador de secretos.
+  const payload = verificar(autorizacion.slice(7), obtenerSecreto('jwt-firma-usuario'));
+  if (!payload) {
+    anotar(NOMBRE, 'RECHAZO', 'token inválido, alterado o expirado',
+      { politica: 'AuthenticationPolicy' });
+    return null;
+  }
+  anotar(NOMBRE, 'AUTENTICA', 'firma HS256 del token verificada',
+    { politica: 'AuthenticationPolicy', sub: payload.sub, rol: payload.rol });
 
   // Un token cerrado por el usuario ya no sirve, aunque no haya expirado.
   try {
     const control = new AbortController();
     const temporizador = setTimeout(() => control.abort(), 1500);
+    anotar(NOMBRE, 'LLAMA', 'consulta a auth-service si la sesión fue revocada',
+      { destino: 'auth :4000', jti: String(payload.jti).slice(0, 8) });
     const respuesta = await fetch(`${AUTH}/internal/revocada/${payload.jti}`, {
       signal: control.signal,
       headers: {
@@ -103,14 +128,16 @@ async function sesionDe(req) {
     clearTimeout(temporizador);
     if (respuesta.ok) {
       const datos = await respuesta.json();
-      if (datos.revocada) return null;
+      if (datos.revocada) {
+        anotar(NOMBRE, 'RECHAZO', 'auth-service responde: sesión REVOCADA');
+        return null;
+      }
+      anotar(NOMBRE, 'AUTENTICA', 'auth-service responde: sesión vigente');
     }
   } catch {
     // Si auth no responde, se deja pasar el token firmado y vigente.
     // Se registra para auditoria; negarlo dejaria caer todo el sitio.
-    console.warn(JSON.stringify({
-      servicio: NOMBRE, correlacion: req.correlacion, evento: 'revocacion_no_verificable',
-    }));
+    anotar(NOMBRE, 'AVISO', 'auth-service no respondió: no se pudo comprobar revocación');
   }
   return {
     usuarioId: payload.sub, rol: payload.rol,
@@ -130,13 +157,26 @@ for (const definicion of RUTAS) {
   const metodo = definicion.metodo.toLowerCase();
 
   app[metodo](definicion.externa, async (req, res) => {
+    // RouteDefinition: la ruta existe en la tabla publicada.
+    anotar(NOMBRE, 'RUTA', `${definicion.id} ${definicion.metodo} ${definicion.externa}`, {
+      destino: definicion.destino,
+      interna: definicion.interna,
+      acceso: Array.isArray(definicion.acceso) ? definicion.acceso.join('|') : definicion.acceso,
+    });
+
     const clave = `${definicion.id}|${req.ip}`;
     if (!dentroDelLimite(clave, definicion.limite)) {
+      anotar(NOMBRE, 'RECHAZO', 'límite de solicitudes excedido',
+        { ruta: definicion.id, tope: `${definicion.limite}/min`, resultado: '429' });
       return res.status(429).json({ error: 'limite_excedido', mensaje: 'Demasiadas solicitudes.' });
     }
 
     const sesion = await sesionDe(req);
     if (!autorizado(definicion.acceso, sesion)) {
+      anotar(NOMBRE, 'RECHAZO',
+        sesion ? 'AuthorizationPolicy: el rol no puede usar este verbo'
+               : 'AuthenticationPolicy: operación protegida sin sesión',
+        { rol: sesion?.rol ?? 'anonimo', resultado: sesion ? '403' : '401' });
       return res.status(sesion ? 403 : 401).json({
         error: sesion ? 'sin_permiso' : 'no_autenticado',
         mensaje: sesion
@@ -144,6 +184,9 @@ for (const definicion of RUTAS) {
           : 'Debe iniciar sesion.',
       });
     }
+
+    anotar(NOMBRE, 'AUTORIZA', 'AuthorizationPolicy: acceso permitido',
+      { rol: sesion?.rol ?? 'anonimo' });
 
     // Reconstruye la ruta interna con los parametros de la externa.
     let rutaInterna = definicion.interna;
@@ -175,6 +218,9 @@ for (const definicion of RUTAS) {
         if (req.get('x-idempotency-key')) cabeceras['x-idempotency-key'] = req.get('x-idempotency-key');
       }
 
+      anotar(NOMBRE, 'ENRUTA', `hacia ${definicion.destino} → ${url}`,
+        { identidad: 'firmada con «identidad-interna»', rol: sesion?.rol ?? 'anonimo' });
+
       const respuesta = await fetch(url, {
         method: definicion.metodo,
         signal: control.signal,
@@ -183,21 +229,15 @@ for (const definicion of RUTAS) {
       });
 
       const texto = await respuesta.text();
-      console.log(JSON.stringify({
-        servicio: NOMBRE, correlacion: req.correlacion, servicioId: definicion.id,
-        metodo: definicion.metodo, externa: definicion.externa,
-        destino: definicion.destino, estado: respuesta.status, ms: Date.now() - inicio,
-        rol: sesion?.rol ?? 'anonimo',
-      }));
+      anotar(NOMBRE, 'RESPUESTA', `${respuesta.status} ${definicion.id} ${definicion.externa}`,
+        { destino: definicion.destino, ms: Date.now() - inicio });
 
       res.status(respuesta.status);
       res.set('content-type', 'application/json');
       res.send(texto || '{}');
     } catch {
-      console.error(JSON.stringify({
-        servicio: NOMBRE, correlacion: req.correlacion, servicioId: definicion.id,
-        evento: 'destino_no_disponible', destino: definicion.destino,
-      }));
+      anotar(NOMBRE, 'RECHAZO', 'el servicio de destino no respondió a tiempo',
+        { destino: definicion.destino, plazoMs: PLAZO_MS, resultado: '504' });
       res.status(504).json({
         error: 'destino_no_disponible',
         mensaje: 'El servicio no respondio a tiempo.',
@@ -268,6 +308,9 @@ app.use((req, res) => {
 });
 
 app.listen(PUERTO, () => {
-  console.log(`[${NOMBRE}] PUBLICO en http://localhost:${PUERTO}`);
-  console.log(`[${NOMBRE}] ${RUTAS.length} rutas publicadas; ${NO_PUBLICADAS.length} internas no publicadas`);
+  cabecera(NOMBRE, [
+    `PUBLICO en http://localhost:${PUERTO}  ·  unica superficie expuesta`,
+    `${RUTAS.length} rutas publicadas · ${NO_PUBLICADAS.length} rutas internas NO publicadas`,
+    `valida sesion, rol y limite; firma la identidad interna y enruta`,
+  ]);
 });

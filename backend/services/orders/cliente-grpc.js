@@ -11,6 +11,7 @@ import grpc from '@grpc/grpc-js';
 import protoLoader from '@grpc/proto-loader';
 
 import { emitirIdentidadInterna, llamarServicio } from '../../shared/identidad.js';
+import { anotar, correlacionActual } from '../../shared/bitacora.js';
 
 const RUTA_PROTO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'proto', 'inventario.proto');
 const DESTINO_GRPC = '127.0.0.1:50051';
@@ -55,7 +56,7 @@ function reservarPorGrpc({ pedidoId, items, identidad }) {
     cliente().ReservarStock(
       {
         pedido_id: pedidoId,
-        correlacion: identidad?.correlacion ?? '',
+        correlacion: correlacionActual() ?? identidad?.correlacion ?? '',
         items: items.map((i) => ({ producto_id: i.productoId, cantidad: i.cantidad })),
       },
       metadatos(identidad),
@@ -96,17 +97,16 @@ async function reservarPorHttp({ pedidoId, items, identidad }) {
 
 export async function reservarStockPorGrpc({ pedidoId, items, identidad }) {
   try {
+    anotar('orders', 'GRPC', 'ReservarStock hacia inventory por el canal gRPC',
+      { destino: DESTINO_GRPC, plazoMs: PLAZO_MS });
     return await reservarPorGrpc({ pedidoId, items, identidad });
   } catch (error) {
     // Un rechazo de negocio NO se reintenta por el otro canal: la respuesta
     // ya es definitiva y repetirla podria reservar dos veces.
     if (error instanceof ErrorReserva) throw error;
 
-    console.warn(JSON.stringify({
-      servicio: 'orders',
-      evento: 'grpc_degradado_a_http',
-      motivo: error.details ?? error.message,
-    }));
+    anotar('orders', 'AVISO', 'canal gRPC no disponible: se degrada al mismo contrato por HTTP',
+      { motivo: error.details ?? error.message });
     return reservarPorHttp({ pedidoId, items, identidad });
   }
 }

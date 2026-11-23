@@ -12,6 +12,7 @@ import { hashearClave, verificarClave } from '../../shared/clave.js';
 import {
   exigirTexto, exigirCorreo, exigirRun, exigirFechaIso, exigirUnoDe, edadEnAnios,
 } from '../../shared/validacion.js';
+import { anotar } from '../../shared/bitacora.js';
 
 const NOMBRE = 'clients';
 const PUERTO = 4001;
@@ -204,8 +205,12 @@ app.post('/internal/credenciales/verificar', ruta((req, res) => {
   // Respuesta identica para "no existe" y "clave incorrecta":
   // asi no se puede enumerar que correos estan registrados.
   if (!valida) {
+    anotar(NOMBRE, 'RECHAZO', 'hash scrypt no coincide: credencial invalida',
+      { intentosRecientes: fallidos + 1 });
     return res.status(401).json({ error: 'credenciales_invalidas' });
   }
+  anotar(NOMBRE, 'CREDENCIAL', 'contraseña verificada contra el hash scrypt almacenado',
+    { sub: fila.id, rol: fila.rol });
   res.json({
     id: fila.id,
     nombre: fila.nombre_completo.split(' ')[0],
@@ -231,4 +236,6 @@ app.get('/internal/clients/:id', ruta((req, res) => {
 }));
 
 montarManejadorDeErrores(app, NOMBRE);
-escucharPrivado(app, PUERTO, NOMBRE);
+escucharPrivado(app, PUERTO, NOMBRE, [
+  'custodio de datos personales y credenciales (RF5, RF10)',
+]);

@@ -12,6 +12,7 @@ import { crearApp, montarManejadorDeErrores, escucharPrivado, ruta, fallar } fro
 import { exigirIdentidadInterna, exigirRol, llamarServicio } from '../../shared/identidad.js';
 import { exigirTexto, exigirEntero } from '../../shared/validacion.js';
 import { reservarStockPorGrpc } from './cliente-grpc.js';
+import { anotar } from '../../shared/bitacora.js';
 
 const NOMBRE = 'orders';
 const PUERTO = 4003;
@@ -226,6 +227,8 @@ app.post('/orders', exigirRol('cliente', 'invitado'), ruta(async (req, res) => {
     });
   } catch (error) {
     if (error.codigo === 'stock_insuficiente') {
+      anotar(NOMBRE, 'RECHAZO', 'sin stock del dia: el pedido NO se crea',
+        { detalle: JSON.stringify(error.detalle ?? {}) });
       fallar(409, 'stock_insuficiente',
         'Alguno de los productos perdio stock mientras compraba.', error.detalle);
     }
@@ -279,6 +282,8 @@ app.post('/orders', exigirRol('cliente', 'invitado'), ruta(async (req, res) => {
   });
 
   registrarTransicion(pedidoId, 'nuevo', 'pendiente_pago', req.identidad);
+  anotar(NOMBRE, 'NEGOCIO', 'pedido creado y persistido',
+    { pedido: pedidoId, estado: 'pendiente_pago', total, descuento, items: vista.items.length });
 
   res.status(201).json({
     pedidoId, estado: 'pendiente_pago', subtotal: vista.subtotal,
@@ -490,4 +495,6 @@ app.get('/internal/ventas', ruta((req, res) => {
 }));
 
 montarManejadorDeErrores(app, NOMBRE);
-escucharPrivado(app, PUERTO, NOMBRE);
+escucharPrivado(app, PUERTO, NOMBRE, [
+  'unico que decide el estado oficial de un pedido (RF1, RF2, RF3)',
+]);
