@@ -27,6 +27,37 @@ Para detener: `Ctrl+C` en la terminal donde corre `npm start`. Eso baja todo el 
 Para rotar los secretos: `npm run secrets -- --rotar`.
 Para partir de cero: borrar `backend/data/` y repetir `migrate` y `seed`.
 
+## Demostración y grabación
+
+Para mostrar el sistema funcionando, con un solo comando:
+
+```
+npm run estudio
+```
+
+Levanta los nueve procesos y reparte sus bitácoras en **cinco franjas**, una por
+cada contenedor que pide la evaluación: frontend, API Gateway, Auth Service,
+Backend y Persistencia. Después va ejecutando el guion de la demostración paso a
+paso, pero no avanza solo: espera que se apriete la barra espaciadora, así se
+puede ir explicando con calma. Al empezar cada paso vacía las franjas, de modo
+que lo que queda en pantalla es la evidencia de ese paso y nada más.
+
+Teclas: `espacio` paso siguiente · `r` repetir · `l` limpiar franjas · `q` salir.
+
+Necesita una ventana de al menos 100×30. El guion vive en
+[`scripts/guion.js`](scripts/guion.js) y son nueve pasos: autenticación, carrito,
+la transacción del pedido, tres rechazos (llamada directa al backend, token
+manipulado y aviso de pago con firma falsa), el pago legítimo con su idempotencia
+y el descarte de una identidad interna inventada.
+
+Si se prefiere una ventana por servicio, están los comandos `npm run demo:*` (uno
+por proceso) y `npm run demo:guion`, que dispara los mismos pasos imprimiendo en
+texto plano qué mirar en cada ventana.
+
+**El código de correlación** de 8 caracteres es el mismo en las cinco franjas
+para una misma llamada: es lo que permite seguir una sola petición por todos los
+contenedores.
+
 ## Qué queda corriendo
 
 | Proceso | Puerto | Visibilidad |

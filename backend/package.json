@@ -12,6 +12,7 @@
     "migrate": "node scripts/migrar.js",
     "seed": "node scripts/sembrar.js",
     "start": "node scripts/arrancar.js",
+    "estudio": "node scripts/estudio.js",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
     "demo:gateway": "node gateways/api-gateway/servidor.js",
     "demo:auth": "node services/auth/servidor.js",

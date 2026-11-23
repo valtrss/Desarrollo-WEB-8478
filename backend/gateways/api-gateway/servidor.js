@@ -119,6 +119,11 @@ async function sesionDe(req) {
     const respuesta = await fetch(`${AUTH}/internal/revocada/${payload.jti}`, {
       signal: control.signal,
       headers: {
+        // La correlacion va tambien como cabecera, no solo dentro de la
+        // identidad firmada: el servicio la lee al recibir la peticion, antes
+        // de verificar la firma, y sin esto se inventaria un codigo nuevo y se
+        // perderia el rastro de la llamada en el log de auth.
+        'x-correlation-id': req.correlacion,
         [CABECERA]: emitirIdentidadInterna({
           usuarioId: payload.sub, rol: 'servicio',
           correlacion: req.correlacion, destino: 'auth',
