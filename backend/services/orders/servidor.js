@@ -84,6 +84,7 @@ async function componerCarrito(carrito, identidad) {
       productoId: producto.id,
       nombre: producto.nombre,
       formato: producto.formato,
+      imagenUrl: producto.imagenUrl ?? null,
       precioUnitario: producto.precio,
       cantidad: item.cantidad,
       subtotal: sub,

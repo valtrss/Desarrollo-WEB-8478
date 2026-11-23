@@ -114,7 +114,11 @@ body > footer { position: relative; z-index: 1; }
 .nonna-card.h-100 { height: 100%; }
 
 /* Marcador de imagen con las aspas del boceto. */
+/* Contenedor de la imagen del producto. Si la imagen no carga, el marcador
+   con aspas queda detras como respaldo. */
 .nonna-figura {
+  position: relative;
+  overflow: hidden;
   aspect-ratio: 16 / 9;
   background:
     linear-gradient(to top right, transparent calc(50% - 0.5px), var(--nonna-borde) calc(50% - 0.5px), var(--nonna-borde) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
@@ -122,6 +126,15 @@ body > footer { position: relative; z-index: 1; }
     var(--nonna-superficie-2);
   border-bottom: 1.5px solid var(--nonna-linea);
   border-radius: 3px 3px 0 0;
+}
+
+.nonna-figura img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .nonna-precio { font-size: 1.25rem; font-weight: 700; }

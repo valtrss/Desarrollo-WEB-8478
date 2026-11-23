@@ -65,6 +65,8 @@ const PRODUCTOS = [
   ['prd_panzotti', 'Panzotti de espinaca y ricotta', 'Espinaca salteada con ajo y ricotta fresca.', 'pastas-rellenas', '500 g', 2, 5290, 11],
   ['prd_agnolotti', 'Agnolotti de osobuco', 'Osobuco deshilachado, receta de la casa.', 'pastas-rellenas', '500 g', 2, 6490, 6],
   ['prd_tortellini', 'Tortellini de queso azul y nuez', 'Para quienes buscan algo con mas caracter.', 'pastas-rellenas', '250 g', 1, 3990, 7],
+  ['prd_ravioles_espinaca', 'Ravioles de espinaca y ricotta', 'Masa verde, relleno suave. Los favoritos de la casa.', 'pastas-rellenas', '500 g', 2, 5190, 13],
+  ['prd_sorrentinos_calabaza', 'Sorrentinos de calabaza', 'Zapallo camote asado con un toque de salvia.', 'pastas-rellenas', '500 g', 2, 5590, 7],
   ['prd_canelones', 'Canelones de verdura', 'Listos para hornear, en bandeja de aluminio.', 'pastas-rellenas', 'Bandeja 1 kg', 4, 10900, 4],
 
   // Pastas largas
@@ -75,6 +77,7 @@ const PRODUCTOS = [
   ['prd_linguine', 'Linguine de semola', 'Semola de trigo candeal, sin huevo.', 'pastas-largas', '500 g', 2, 4390, 18],
   ['prd_tagliatelle', 'Tagliatelle al limon', 'Ralladura de limon de Pica en la masa.', 'pastas-largas', '500 g', 2, 4990, 8],
   ['prd_lasagna', 'Laminas para lasana', 'Doce laminas listas para armar.', 'pastas-largas', '500 g', 4, 3890, 12],
+  ['prd_fideos_zapallo', 'Fideos de zapallo', 'Cinta anaranjada, suave y levemente dulce.', 'pastas-largas', '500 g', 2, 4790, 11],
 
   // Noquis
   ['prd_noquis', 'Noquis de papa', 'Papa seleccionada, sin conservantes.', 'noquis', '500 g', 2, 4290, 15],
@@ -88,11 +91,13 @@ const PRODUCTOS = [
   ['prd_alfredo', 'Salsa alfredo', 'Crema, mantequilla y parmesano reggiano.', 'salsas', '350 g', 2, 3590, 8],
   ['prd_putanesca', 'Salsa putanesca', 'Alcaparras, aceitunas y anchoas.', 'salsas', '350 g', 2, 3690, 5],
   ['prd_cuatro_quesos', 'Salsa cuatro quesos', 'Azul, parmesano, mantecoso y de cabra.', 'salsas', '350 g', 2, 4290, 7],
+  ['prd_salsa_rosa', 'Salsa rosa', 'Pomodoro con crema, la que piden los ninos.', 'salsas', '350 g', 2, 3490, 12],
 
   // Packs
   ['prd_pack_familiar', 'Pack familiar', 'Dos pastas, dos salsas, para cuatro personas.', 'packs', 'Pack 2 kg', 4, 15900, 5],
   ['prd_pack_dos', 'Pack para dos', 'Una pasta rellena y una salsa a eleccion.', 'packs', 'Pack 750 g', 2, 7900, 9],
   ['prd_pack_vegetariano', 'Pack vegetariano', 'Panzotti, noquis de zapallo y pesto.', 'packs', 'Pack 1.5 kg', 3, 12900, 4],
+  ['prd_pack_noquis', 'Pack de noquis', 'Noquis de papa y de zapallo con salsa alfredo.', 'packs', 'Pack 1.2 kg', 3, 11500, 6],
 ];
 for (const [id, nombre, descripcion, categoria, formato, porciones, precio, stock] of PRODUCTOS) {
   inventory.prepare(`
@@ -101,7 +106,7 @@ for (const [id, nombre, descripcion, categoria, formato, porciones, precio, stoc
     VALUES (?,?,?,?,?,?,?,?,?,0,0,?)
     ON CONFLICT(id) DO UPDATE SET stock_del_dia = excluded.stock_del_dia
   `).run(id, nombre, descripcion, categoria, formato, porciones, precio,
-         `/img/${id}.jpg`, stock, ahora);
+         `/img/${id}.svg`, stock, ahora);
 }
 console.log(`  + inventory: ${CATEGORIAS.length} categorias y ${PRODUCTOS.length} productos`);
 console.log('    (la salsa pomodoro queda en 0 para demostrar el caso AGOTADO)');

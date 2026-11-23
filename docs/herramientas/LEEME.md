@@ -26,3 +26,23 @@ Qué hace, además de lo obvio:
 
 Si cambias el informe en Markdown, vuelve a correr el script y el `.docx` se
 regenera completo.
+
+
+## `generar-ilustraciones.py`
+
+Genera las ilustraciones del catálogo en `frontend/web/img/`, una por producto.
+
+```bash
+python3 docs/herramientas/generar-ilustraciones.py
+```
+
+Son dibujos vectoriales propios, no fotos: no hay fotografía de pastas con
+licencia clara que se pueda incluir en una entrega evaluada. Se agrupan en
+familias de forma (rellena cuadrada, media luna, anillo, cinta, hebra, lámina,
+tubo, ñoqui, salsa, pack) y cambian de color según la masa, así que cada
+producto se distingue del resto.
+
+**Si consigues fotos reales:** déjalas en `frontend/web/img/` con el mismo
+nombre del producto y cambia la extensión en `scripts/sembrar.js`, en la línea
+que arma `imagenUrl`. El frontend no necesita ningún cambio: si una imagen no
+carga, la tarjeta vuelve sola al marcador con aspas.

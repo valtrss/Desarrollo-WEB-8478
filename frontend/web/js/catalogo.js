@@ -14,7 +14,7 @@ function tarjeta(producto) {
   return `
     <div class="col-sm-6 col-xl-4">
       <article class="nonna-card d-flex flex-column h-100">
-        <div class="nonna-figura"></div>
+        <div class="nonna-figura"><img src="${producto.imagenUrl}" alt="${producto.nombre}" loading="lazy" onerror="this.remove()"></div>
         <div class="p-3 d-flex flex-column flex-grow-1">
           <h3 class="h6 mb-1">${producto.nombre}</h3>
           <p class="text-secondary small mb-2">${producto.formato} &middot; ${producto.porciones} porciones</p>

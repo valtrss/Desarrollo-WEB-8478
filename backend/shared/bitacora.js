@@ -16,6 +16,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 export const contexto = new AsyncLocalStorage();
 
 const JSON_PURO = process.env.BITACORA === 'json';
+const SILENCIO = process.env.BITACORA === 'silencio';
 const SIN_COLOR = process.env.NO_COLOR !== undefined || !process.stdout.isTTY;
 
 const C = {
@@ -85,6 +86,7 @@ const corto = (c) => (c ? String(c).replace(/-/g, '').slice(0, 8) : '·····�
  * @param {object} [datos]   pares clave=valor que se muestran al final
  */
 export function anotar(servicio, evento, mensaje, datos) {
+  if (SILENCIO) return;
   const correlacion = correlacionActual();
 
   if (JSON_PURO) {

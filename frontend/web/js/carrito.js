@@ -36,7 +36,7 @@ function fila(item) {
     <tr>
       <td>
         <div class="d-flex align-items-center gap-2">
-          <div class="nonna-figura" style="width:56px;aspect-ratio:1;border-radius:3px;"></div>
+          <div class="nonna-figura" style="width:56px;aspect-ratio:1;border-radius:3px;">${item.imagenUrl ? `<img src="${item.imagenUrl}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>
           <div>
             <div class="fw-semibold">${item.nombre}</div>
             ${item.disponible ? '' : '<div class="small text-danger">sin stock hoy</div>'}

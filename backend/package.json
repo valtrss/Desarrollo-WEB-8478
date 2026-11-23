@@ -9,8 +9,8 @@
   },
   "scripts": {
     "secrets": "node scripts/generar-secretos.js",
-    "migrate": "node scripts/migrar.js",
-    "seed": "node scripts/sembrar.js",
+    "migrate": "BITACORA=silencio node scripts/migrar.js",
+    "seed": "BITACORA=silencio node scripts/sembrar.js",
     "start": "node scripts/arrancar.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
     "demo:gateway": "node gateways/api-gateway/servidor.js",

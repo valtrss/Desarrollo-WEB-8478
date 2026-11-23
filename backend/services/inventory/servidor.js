@@ -201,6 +201,7 @@ app.post('/internal/precios', ruta((req, res) => {
   res.json({
     data: filas.map((p) => ({
       id: p.id, nombre: p.nombre, formato: p.formato, precio: p.precio,
+      imagenUrl: p.imagen_url,
       disponible: p.stock_del_dia - p.stock_reservado > 0,
       stockLibre: Math.max(0, p.stock_del_dia - p.stock_reservado),
     })),

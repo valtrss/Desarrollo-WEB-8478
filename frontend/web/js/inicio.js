@@ -11,7 +11,7 @@ const CONSULTA_PORTADA = `
     portada {
       horaCorte
       categorias { id nombre }
-      productosDelDia { id nombre formato precio disponible stockDelDia }
+      productosDelDia { id nombre formato precio disponible stockDelDia imagenUrl }
       misUltimosPedidos {
         id estado total creadoEn
         items { nombre cantidad }
@@ -25,7 +25,7 @@ function tarjetaProducto(producto) {
   return `
     <div class="col-6 col-lg-3">
       <article class="nonna-card h-100 d-flex flex-column">
-        <div class="nonna-figura"></div>
+        <div class="nonna-figura"><img src="${producto.imagenUrl}" alt="${producto.nombre}" loading="lazy" onerror="this.remove()"></div>
         <div class="p-3 d-flex flex-column flex-grow-1">
           <h3 class="h6 mb-1">${producto.nombre}</h3>
           <p class="text-secondary small mb-2">Formato ${producto.formato}</p>
