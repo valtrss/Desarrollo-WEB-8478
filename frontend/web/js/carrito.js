@@ -36,7 +36,7 @@ function fila(item) {
     <tr>
       <td>
         <div class="d-flex align-items-center gap-2">
-          <div class="nonna-figura" style="width:56px;aspect-ratio:1;border-radius:3px;">${item.imagenUrl ? `<img src="${item.imagenUrl}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>
+          <div class="nonna-figura" style="width:56px;aspect-ratio:1;border-radius:3px;">${item.imagenUrl ? `<img src="${item.imagenUrl}" alt="${item.nombre}" loading="lazy" onerror="this.remove()">` : ''}</div>
           <div>
             <div class="fw-semibold">${item.nombre}</div>
             ${item.disponible ? '' : '<div class="small text-danger">sin stock hoy</div>'}
@@ -135,6 +135,10 @@ async function cargarCarritoInvitado() {
         cantidad: guardado.cantidad,
         subtotal: sub,
         disponible: producto.disponible,
+        // Sin esto la fila del carrito de invitado queda con el marco vacio:
+        // con sesion iniciada la imagen viene del backend, pero aqui la vista
+        // se arma en el navegador y hay que copiarla del producto.
+        imagenUrl: producto.imagenUrl,
       });
     }
     pintar({ items, subtotal, total: subtotal });

@@ -48,6 +48,51 @@ const ok = (texto) => ({ tipo: 'ok', texto });
 const no = (texto) => ({ tipo: 'no', texto });
 const nota = (texto) => ({ tipo: 'nota', texto });
 
+// --- preparacion, para que los pasos se puedan REPETIR -----------------------
+//
+// Grabando por clips se repite el mismo paso varias veces hasta que sale
+// bien. El problema es que algunos pasos consumen su propia entrada: crear el
+// pedido vacia el carrito, y pagar deja el pedido en «pagado». Repetirlos tal
+// cual daria «carrito vacio» en vez de la demostracion.
+//
+// Estas dos funciones reponen lo que haga falta ANTES del paso. Lo dejan
+// anotado, para no fingir que el sistema hizo algo que no hizo.
+
+const PRODUCTO_DEMO = 'prd_ravioles';
+
+async function asegurarSesion(estado) {
+  if (estado.token) return false;
+  const r = await pedir('/api/v1/auth/login', { metodo: 'POST', cuerpo: CUENTA_DEMO });
+  if (r.estado !== 200) return false;
+  estado.token = r.datos.accessToken;
+  return true;
+}
+
+async function asegurarCarritoConItems(estado) {
+  const carrito = await pedir('/api/v1/cart', { token: estado.token });
+  if (carrito.estado === 200 && carrito.datos?.items?.length) return false;
+  await pedir('/api/v1/cart/items', {
+    metodo: 'POST', token: estado.token,
+    cuerpo: { productoId: PRODUCTO_DEMO, cantidad: 2 },
+  });
+  return true;
+}
+
+async function asegurarPedidoPorPagar(estado) {
+  if (estado.pedidoId) {
+    const actual = await pedir(`/api/v1/orders/${estado.pedidoId}`, { token: estado.token });
+    if (actual.estado === 200 && actual.datos?.estado === 'pendiente_pago') return false;
+  }
+  await asegurarCarritoConItems(estado);
+  const nuevo = await pedir('/api/v1/orders', {
+    metodo: 'POST', token: estado.token,
+    cuerpo: { direccionEntrega: 'Av. Pajaritos 1234', comuna: 'Maipu' },
+  });
+  if (nuevo.estado !== 201) return false;
+  estado.pedidoId = nuevo.datos.pedidoId;
+  return true;
+}
+
 export const PASOS = [
   // -------------------------------------------------------------------------
   {
@@ -99,6 +144,7 @@ export const PASOS = [
       'persistencia: SQL sobre carritos y carrito_items en orders.db',
     ],
     async ejecutar(estado) {
+      await asegurarSesion(estado);
       const r = await pedir('/api/v1/cart/items', {
         metodo: 'POST', token: estado.token,
         cuerpo: { productoId: 'prd_ravioles', cantidad: 2, precioUnitario: 1 },
@@ -122,6 +168,11 @@ export const PASOS = [
       'persistencia: fijese que orders escribe en orders.db e inventory en inventory.db',
     ],
     async ejecutar(estado) {
+      await asegurarSesion(estado);
+      // Crear el pedido vacia el carrito, asi que al repetir el paso hay que
+      // reponerlo. Si no, la segunda toma daria «carrito vacio».
+      const repuesto = await asegurarCarritoConItems(estado);
+
       const r = await pedir('/api/v1/orders', {
         metodo: 'POST', token: estado.token,
         cuerpo: { direccionEntrega: 'Av. Pajaritos 1234', comuna: 'Maipu' },
@@ -129,6 +180,7 @@ export const PASOS = [
       if (r.estado !== 201) return [no(`${r.estado}: ${JSON.stringify(r.datos)}`)];
       estado.pedidoId = r.datos.pedidoId;
       return [
+        ...(repuesto ? [nota('(el carrito estaba vacio: se repuso antes de este paso)')] : []),
         ok(`pedido ${r.datos.pedidoId} · estado ${r.datos.estado} · total ${r.datos.total}`),
         nota('la transaccion vacia el carrito en el mismo COMMIT: no puede quedar a medias'),
         nota('el stock quedo reservado; el pedido NO esta pagado todavia'),
@@ -210,7 +262,11 @@ export const PASOS = [
       'backend:     el aviso repetido responde «ya_procesada» sin tocar la base',
     ],
     async ejecutar(estado) {
-      if (!estado.pedidoId) return [no('no hay pedido: el paso del pedido no alcanzo a crearlo')];
+      await asegurarSesion(estado);
+      // Un pedido ya pagado no se puede volver a pagar. Al repetir el paso se
+      // prepara uno nuevo, para que la demostracion sirva otra vez.
+      const nuevo = await asegurarPedidoPorPagar(estado);
+      if (!estado.pedidoId) return [no('no se pudo preparar un pedido por pagar')];
 
       const pago = await pedir('/api/v1/payments', {
         metodo: 'POST', token: estado.token,
@@ -234,6 +290,7 @@ export const PASOS = [
       const final = await pedir(`/api/v1/orders/${estado.pedidoId}`, { token: estado.token });
 
       return [
+        ...(nuevo ? [nota(`(se preparo un pedido nuevo para este paso: ${estado.pedidoId})`)] : []),
         ok(`pago ${pago.datos.pagoId} · monto ${pago.datos.monto} (lo fijo orders, no el navegador)`),
         ok(`aviso del proveedor: ${JSON.stringify(aviso.datos)}`),
         nota(`mismo aviso reenviado → ${JSON.stringify(repetido.datos)} (idempotencia)`),

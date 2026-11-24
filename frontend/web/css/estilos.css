@@ -78,12 +78,25 @@ body > footer { position: relative; z-index: 1; }
 .nonna-navbar .nav-link.active { font-weight: 600; }
 
 .nonna-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   border: 1.5px solid var(--nonna-linea);
   background: var(--nonna-superficie-2);
   border-radius: 4px;
   padding: 0.35rem 0.9rem !important;
+}
+
+/* El emblema del encabezado. Position static para que no lo capture el
+   posicionamiento absoluto que usa .nonna-figura img. */
+.nonna-marca img {
+  position: static;
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
 }
 
 /* Transparente a proposito: las rayas de la grilla tienen que verse detras

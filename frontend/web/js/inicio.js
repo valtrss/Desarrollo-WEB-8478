@@ -49,7 +49,9 @@ function tarjetaCategoria(categoria) {
     <div class="col-6 col-md-4">
       <a class="text-decoration-none" href="/catalogo.html?categoria=${categoria.id}">
         <div class="nonna-card h-100">
-          <div class="nonna-figura" style="aspect-ratio: 21/9;"></div>
+          <div class="nonna-figura" style="aspect-ratio: 21/9;">
+            <img src="/img/cat-${categoria.id}.jpg" alt="${categoria.nombre}" loading="lazy" onerror="this.remove()">
+          </div>
           <div class="p-3"><strong class="text-dark">${categoria.nombre}</strong></div>
         </div>
       </a>
